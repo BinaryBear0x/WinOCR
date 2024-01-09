@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Drawing;
 using System.IO;
 using System.Threading;
@@ -19,63 +18,57 @@ namespace WinOCR
 
         private void Form1_Load(object sender, EventArgs e)
         {
-           
-        }
 
+        }
 
         private void ClipboardWatcher()
         {
-           
-             
-                if (Clipboard.ContainsImage())
+            if (Clipboard.ContainsImage())
+            {
+                Image newImage = Clipboard.GetImage();
+
+                pictureBox1.Image = newImage;
+
+                currentImage = newImage;
+
+                if (currentImage != null)
                 {
-                    Image newImage = Clipboard.GetImage();
+                    // Dil dosyasının bulunduğu dizini belirtin
+                    var tessDataPath = Application.StartupPath;
 
-                  
-                       
-                        pictureBox1.Image = newImage;
+                    var ocr = new TesseractEngine(tessDataPath, "tur");
+                    var page = ocr.Process((Bitmap)currentImage);
 
-                      
-                        currentImage = newImage;
+                    // Extract text from the page
+                    var text = page.GetText();
 
-                        if (currentImage != null)
-                        {
-                            var ocr = new TesseractEngine(@"C:\Users\Özhan Yıldırım\source\repos\WinOCR\packages\Tesseract.5.2.0", "tur");
-                            var page = ocr.Process((Bitmap)currentImage);
+                    // Print the extracted text
+                    richTextBox1.Invoke((MethodInvoker)delegate
+                    {
+                        richTextBox1.Text = text;
+                    });
+                }
+            }
 
-                            // Extract text from the page
-                            var text = page.GetText();
-
-                            // Print the extracted text
-                            richTextBox1.Invoke((MethodInvoker)delegate
-                            {
-                                richTextBox1.Text = text;
-                            });
-                        }
-                    }
-                
-
-            
-                Thread.Sleep(1000);
-            
+            Thread.Sleep(1000);
         }
-
-     
 
         private void button1_Click(object sender, EventArgs e)
         {
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-
                 string filePath = openFileDialog1.FileName;
 
                 pictureBox1.ImageLocation = filePath;
 
                 var image = new Bitmap(openFileDialog1.FileName);
-                var ocr = new TesseractEngine(@"C:\Users\Özhan Yıldırım\source\repos\WinOCR\packages\Tesseract.5.2.0", "tur");
+
+                // Dil dosyasının bulunduğu dizini belirtin
+                var tessDataPath = Application.StartupPath;
+
+                var ocr = new TesseractEngine(tessDataPath, "tur");
                 var page = ocr.Process(image);
 
-                
                 var text = page.GetText();
 
                 richTextBox1.Text = text;
